@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartStock — Protótipo</title>
+<style>
+:root{
+  --brand:#1a56db; --brand-d:#1e3a8a; --brand-l:#e8f0fe;
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f4f6fa; --card:#fff;
+  --ok:#16a34a; --ok-l:#dcfce7; --warn:#d97706; --warn-l:#fef3c7; --err:#dc2626; --err-l:#fee2e2;
+  --side:#0b1f44;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:14px}
+.screen{display:none;width:1440px;height:900px;overflow:hidden}
+.screen.active{display:flex}
+button,input,select,textarea{font:inherit}
+/* ===== Layout ===== */
+.side{width:240px;flex:none;background:var(--side);color:#cbd5e1;display:flex;flex-direction:column;padding:24px 16px}
+.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:20px;padding:0 8px 28px}
+.logo i{width:34px;height:34px;border-radius:9px;background:var(--brand);display:grid;place-items:center;font-style:normal;font-size:18px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:8px;color:#cbd5e1;text-decoration:none;margin-bottom:4px;font-weight:500}
+.nav a.on{background:var(--brand);color:#fff}
+.nav a span{width:20px;text-align:center}
+.side .ia{margin-top:auto;background:#13306a;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.45}
+.side .ia b{color:#fff;display:block;margin-bottom:4px;font-size:13px}
+.side .ia em{display:inline-block;margin-top:8px;background:#ea580c;color:#fff;font-style:normal;font-size:11px;padding:2px 8px;border-radius:99px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 32px;gap:16px}
+.top h1{font-size:20px;font-weight:700}
+.search{margin-left:auto;width:320px;height:40px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;padding:0 12px;color:var(--muted);gap:8px;background:#f8fafc}
+.bell{position:relative;width:40px;height:40px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center}
+.bell::after{content:"3";position:absolute;top:-6px;right:-6px;background:var(--err);color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:grid;place-items:center}
+.user{display:flex;align-items:center;gap:10px;font-size:13px}
+.user i{width:36px;height:36px;border-radius:50%;background:var(--brand-l);color:var(--brand);font-style:normal;font-weight:700;display:grid;place-items:center}
+.user small{display:block;color:var(--muted)}
+.content{padding:28px 32px;flex:1;display:flex;flex-direction:column;gap:20px;overflow:hidden}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.card h3 small{font-weight:500;color:var(--muted);font-size:12.5px}
+.row{display:flex;gap:20px}
+.btn{white-space:nowrap;height:40px;padding:0 18px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:600;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.btn.p{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.g{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.r{background:var(--err);border-color:var(--err);color:#fff}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.b-ok{background:var(--ok-l);color:#166534}.b-warn{background:var(--warn-l);color:#92400e}.b-err{background:var(--err-l);color:#991b1b}.b-blue{background:var(--brand-l);color:var(--brand-d)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;padding:10px 12px;background:#f8fafc;border-bottom:1px solid var(--line)}
+td{white-space:nowrap;padding:12px;border-bottom:1px solid var(--line)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.field{display:flex;flex-direction:column;gap:6px}.row .field{flex:1}
+.field label{font-size:13px;font-weight:600}
+.field .in{height:42px;border:1px solid #cbd5e1;border-radius:8px;padding:0 12px;display:flex;align-items:center;color:var(--ink);background:#fff}
+.field .in.ph{color:#94a3b8}
+.field .hint{font-size:12px;color:var(--muted)}
+/* ===== KPIs ===== */
+.kpi{flex:1;display:flex;gap:14px;align-items:flex-start}
+.kpi .ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-size:20px}
+.kpi p{color:var(--muted);font-size:13px}
+.kpi strong{display:block;font-size:26px;margin:4px 0 2px}
+.kpi small{font-size:12px;font-weight:600}
+.up{color:var(--ok)}.down{color:var(--err)}
+/* chart */
+.bars{display:flex;align-items:flex-end;gap:18px;height:210px;padding:0 8px;border-bottom:1px solid var(--line)}
+.bars div{flex:1;display:flex;gap:4px;align-items:flex-end;height:100%}
+.bars span{flex:1;border-radius:4px 4px 0 0}
+.bars .e{background:var(--brand)}.bars .s{background:#93b4f5}
+.xl{display:flex;gap:18px;padding:6px 8px 0;color:var(--muted);font-size:12px}.xl span{flex:1;text-align:center}
+.leg{display:flex;gap:16px;font-size:12px;color:var(--muted)}.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.alert-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.alert-item:last-child{border:0}
+.alert-item .dot{width:36px;height:36px;border-radius:8px;display:grid;place-items:center}
+.alert-item div{flex:1}.alert-item small{color:var(--muted)}
+.prog{height:6px;background:#e2e8f0;border-radius:99px;margin-top:6px}.prog i{display:block;height:100%;border-radius:99px}
+/* ===== Login ===== */
+#login{background:#fff}
+.lg-left{width:640px;background:linear-gradient(150deg,#0b1f44 0%,#1a56db 100%);color:#fff;padding:56px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.lg-left h2{font-size:40px;line-height:1.15;margin-top:auto;font-weight:700}
+.lg-left p{font-size:17px;opacity:.85;margin-top:16px;max-width:460px;line-height:1.5}
+.lg-left ul{list-style:none;margin:32px 0 auto;display:flex;flex-direction:column;gap:12px;font-size:15px}
+.lg-left li::before{content:"✓";display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.18);margin-right:10px;font-size:12px}
+.lg-left .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:32px 32px}
+.lg-left>*{position:relative}
+.lg-right{flex:1;display:grid;place-items:center}
+.lg-form{width:400px;display:flex;flex-direction:column;gap:18px}
+.lg-form h1{font-size:28px}.lg-form>p{color:var(--muted);margin-top:-10px}
+.lg-form .opts{display:flex;justify-content:space-between;font-size:13px}
+.lg-form .opts a{color:var(--brand);font-weight:600;text-decoration:none}
+.chk{display:inline-block;width:16px;height:16px;border:1px solid #94a3b8;border-radius:4px;vertical-align:-3px;margin-right:6px;background:var(--brand);border-color:var(--brand)}
+.lg-form .btn{height:46px;justify-content:center;font-size:15px}
+.foot{text-align:center;color:var(--muted);font-size:12.5px}
+/* filters */
+.filters{display:flex;gap:12px;align-items:center}
+.chip{white-space:nowrap;height:38px;padding:0 14px;border:1px solid var(--line);border-radius:8px;background:#fff;display:inline-flex;align-items:center;gap:8px;color:#334155}
+.pager{display:flex;justify-content:space-between;align-items:center;padding-top:14px;color:var(--muted);font-size:13px}
+.pager b{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:6px;border:1px solid var(--line);margin-left:6px;color:var(--ink);font-weight:500}
+.pager b.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.acts{display:flex;gap:6px}.acts span{width:32px;height:32px;border:1px solid var(--line);border-radius:6px;display:grid;place-items:center;font-size:14px}
+/* toggle */
+.seg{display:flex;background:#f1f5f9;border-radius:10px;padding:4px}
+.seg span{flex:1;text-align:center;padding:10px;border-radius:8px;font-weight:600;color:var(--muted)}
+.seg span.on{background:#fff;color:var(--ok);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.sw{width:42px;height:24px;border-radius:99px;background:var(--brand);position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+.sw.off{background:#cbd5e1}.sw.off::after{right:auto;left:3px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.set-row:last-child{border:0}.set-row small{display:block;color:var(--muted);margin-top:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabs span{padding:10px 16px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs span.on{color:var(--brand);border-color:var(--brand)}
+.rep{display:flex;gap:14px;align-items:center;padding:16px;border:1px solid var(--line);border-radius:10px;flex:1}
+.rep .ic{width:44px;height:44px;border-radius:10px;background:var(--brand-l);display:grid;place-items:center;font-size:20px}
+.rep div{flex:1}.rep small{color:var(--muted);font-size:12.5px;display:block;margin-top:2px}
+.rep.on{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+.donut{width:150px;height:150px;border-radius:50%;background:conic-gradient(var(--brand) 0 38%,#60a5fa 38% 62%,#93c5fd 62% 82%,#cbd5e1 82% 100%);display:grid;place-items:center;flex:none}
+.donut::after{content:"";width:92px;height:92px;background:#fff;border-radius:50%}
+.tight td,.tight th{padding-left:8px;padding-right:8px}
+</style>
+</head>
+<body>
+
+<!-- ======================= 1. LOGIN ======================= -->
+<section class="screen" id="login">
+  <div class="lg-left">
+    <div class="grid"></div>
+    <div class="logo" style="padding:0"><i>📦</i>SmartStock</div>
+    <h2>Seu estoque sob controle,<br>com inteligência.</h2>
+    <p>Controle produtos, movimentações e indicadores em um só lugar, com alertas automáticos de reposição.</p>
+    <ul>
+      <li>Dashboard com indicadores em tempo real</li>
+      <li>Alertas automáticos de estoque mínimo</li>
+      <li>Relatórios gerenciais em segundos</li>
+      <li>Assistente de IA integrado (em breve)</li>
+    </ul>
+  </div>
+  <div class="lg-right">
+    <form class="lg-form" onsubmit="return false">
+      <h1>Bem-vindo de volta 👋</h1>
+      <p>Entre com sua conta para acessar o painel.</p>
+      <div class="field"><label>E-mail</label><div class="in">ryan@empresa.com.br</div></div>
+      <div class="field"><label>Senha</label><div class="in">••••••••••&nbsp;<span style="margin-left:auto;color:var(--muted)">👁</span></div></div>
+      <div class="opts"><span><i class="chk"></i>Lembrar de mim</span><a href="#">Esqueci minha senha</a></div>
+      <button class="btn p">Entrar</button>
+      <p class="foot">Não tem acesso? Fale com o administrador da sua empresa.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ======================= 2. DASHBOARD ======================= -->
+<section class="screen" id="dashboard">
+  <aside class="side" data-on="dashboard"></aside>
+  <div class="main">
+    <header class="top"><h1>Dashboard</h1><div class="search">🔍 Buscar produtos, movimentações...</div><div class="bell">🔔</div><div class="user"><i>RM</i><div><b>Ryan Medeiros</b><small>Administrador</small></div></div></header>
+    <div class="content">
+      <div class="row">
+        <div class="card kpi"><div class="ic" style="background:var(--brand-l)">📦</div><div><p>Total de produtos</p><strong>248</strong><small class="up">▲ 12 este mês</small></div></div>
+        <div class="card kpi"><div class="ic" style="background:var(--ok-l)">💰</div><div><p>Valor em estoque</p><strong>R$ 186.420</strong><small class="up">▲ 8,4% vs. mês anterior</small></div></div>
+        <div class="card kpi"><div class="ic" style="background:var(--err-l)">⚠️</div><div><p>Abaixo do mínimo</p><strong>7</strong><small class="down">▲ 3 desde ontem</small></div></div>
+        <div class="card kpi"><div class="ic" style="background:var(--warn-l)">🔄</div><div><p>Movimentações (30 dias)</p><strong>1.032</strong><small class="up">▲ 5,1%</small></div></div>
+      </div>
+      <div class="row" style="flex:1;min-height:0">
+        <div class="card" style="flex:2">
+          <h3>Entradas x Saídas <span class="leg"><span><i style="background:var(--brand)"></i>Entradas</span><span><i style="background:#93b4f5"></i>Saídas</span></span></h3>
+          <div class="bars">
+            <div><span class="e" style="height:55%"></span><span class="s" style="height:40%"></span></div>
+            <div><span class="e" style="height:62%"></span><span class="s" style="height:48%"></span></div>
+            <div><span class="e" style="height:48%"></span><span class="s" style="height:52%"></span></div>
+            <div><span class="e" style="height:75%"></span><span class="s" style="height:58%"></span></div>
+            <div><span class="e" style="height:68%"></span><span class="s" style="height:61%"></span></div>
+            <div><span class="e" style="height:82%"></span><span class="s" style="height:66%"></span></div>
+            <div><span class="e" style="height:90%"></span><span class="s" style="height:72%"></span></div>
+          </div>
+          <div class="xl"><span>Mai</span><span>Jun</span><span>Jul</span><span>Ago</span><span>Set</span><span>Out</span><span>Nov</span></div>
+          <h3 style="margin:22px 0 8px">Últimas movimentações <small>Ver todas →</small></h3>
+          <table>
+            <tr><th>Produto</th><th>Tipo</th><th>Qtd.</th><th>Data</th></tr>
+            <tr><td>Mouse sem fio Logitech M170</td><td><span class="badge b-err">Saída</span></td><td>6</td><td>24/11 · 13:42</td></tr>
+            <tr><td>Cabo HDMI 2m</td><td><span class="badge b-ok">Entrada</span></td><td>150</td><td>24/11 · 10:15</td></tr>
+          </table>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:20px">
+          <div class="card" style="flex:1">
+            <h3>🔔 Alertas de reposição <span class="badge b-err">7</span></h3>
+            <div class="alert-item"><span class="dot" style="background:var(--err-l)">🖱️</span><div><b>Mouse Logitech M170</b><br><small>4 un. · mínimo 10</small><div class="prog"><i style="width:40%;background:var(--err)"></i></div></div></div>
+            <div class="alert-item"><span class="dot" style="background:var(--err-l)">🖥️</span><div><b>Monitor LG 24"</b><br><small>3 un. · mínimo 4</small><div class="prog"><i style="width:75%;background:var(--err)"></i></div></div></div>
+            <div class="alert-item"><span class="dot" style="background:var(--warn-l)">📄</span><div><b>Papel A4 Chamex</b><br><small>12 un. · mínimo 15</small><div class="prog"><i style="width:80%;background:var(--warn)"></i></div></div></div>
+          </div>
+          <div class="card">
+            <h3>Estoque por categoria</h3>
+            <div style="display:flex;gap:18px;align-items:center"><div class="donut"></div>
+            <div class="leg" style="flex-direction:column;gap:8px;font-size:13px"><span><i style="background:var(--brand)"></i>Eletrônicos 38%</span><span><i style="background:#60a5fa"></i>Periféricos 24%</span><span><i style="background:#93c5fd"></i>Acessórios 20%</span><span><i style="background:#cbd5e1"></i>Escritório 18%</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 3. PRODUTOS ======================= -->
+<section class="screen" id="produtos">
+  <aside class="side" data-on="produtos"></aside>
+  <div class="main">
+    <header class="top"><h1>Gestão de Produtos</h1><div class="search">🔍 Buscar produtos, movimentações...</div><div class="bell">🔔</div><div class="user"><i>RM</i><div><b>Ryan Medeiros</b><small>Administrador</small></div></div></header>
+    <div class="content" style="flex-direction:row">
+      <div class="card tight" style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <div class="filters" style="margin-bottom:16px">
+          <div class="chip" style="width:180px;color:var(--muted)">🔍 Buscar por nome...</div>
+          <div class="chip">Categoria: Todas ▾</div>
+          <div class="chip">Status: Todos ▾</div>
+          <button class="btn" style="margin-left:auto" title="Exportar">⬇</button>
+          <button class="btn p">＋ Novo produto</button>
+        </div>
+        <table>
+          <tr><th>ID</th><th>Produto</th><th>Categoria</th><th style="text-align:right">Qtd.</th><th style="text-align:right">Mínimo</th><th style="text-align:right">Preço</th><th>Status</th><th>Ações</th></tr>
+          <tr><td>#001</td><td><b>Notebook Dell Inspiron 15</b></td><td>Eletrônicos</td><td class="n">18</td><td class="n">5</td><td class="n">R$ 3.899,90</td><td><span class="badge b-ok">Normal</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+          <tr style="background:#eff4ff"><td>#002</td><td><b>Mouse sem fio Logitech M170</b></td><td>Periféricos</td><td class="n">4</td><td class="n">10</td><td class="n">R$ 79,90</td><td><span class="badge b-err">Crítico</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+          <tr><td>#003</td><td><b>Teclado mecânico Redragon</b></td><td>Periféricos</td><td class="n">22</td><td class="n">8</td><td class="n">R$ 249,90</td><td><span class="badge b-ok">Normal</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+          <tr><td>#004</td><td><b>Monitor LG 24" Full HD</b></td><td>Eletrônicos</td><td class="n">3</td><td class="n">4</td><td class="n">R$ 899,00</td><td><span class="badge b-err">Crítico</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+          <tr><td>#005</td><td><b>Cabo HDMI 2m</b></td><td>Acessórios</td><td class="n">120</td><td class="n">30</td><td class="n">R$ 24,90</td><td><span class="badge b-ok">Normal</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+          <tr><td>#006</td><td><b>Papel A4 Chamex (resma)</b></td><td>Escritório</td><td class="n">12</td><td class="n">15</td><td class="n">R$ 32,50</td><td><span class="badge b-warn">Atenção</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+          <tr><td>#007</td><td><b>Headset JBL Quantum 100</b></td><td>Periféricos</td><td class="n">35</td><td class="n">10</td><td class="n">R$ 189,90</td><td><span class="badge b-ok">Normal</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+          <tr><td>#008</td><td><b>SSD Kingston 480GB</b></td><td>Eletrônicos</td><td class="n">27</td><td class="n">8</td><td class="n">R$ 229,00</td><td><span class="badge b-ok">Normal</span></td><td><div class="acts"><span>✏️</span><span>🗑️</span></div></td></tr>
+        </table>
+        <div class="pager" style="margin-top:auto"><span>Mostrando 1–8 de 248 produtos</span><span><b>‹</b><b class="on">1</b><b>2</b><b>3</b><b>…</b><b>31</b><b>›</b></span></div>
+      </div>
+      <div class="card" style="width:310px;flex:none;display:flex;flex-direction:column;gap:14px">
+        <h3 style="margin:0">✏️ Editar produto <span style="color:var(--muted)">✕</span></h3>
+        <div class="field"><label>Nome do produto *</label><div class="in">Mouse sem fio Logitech M170</div></div>
+        <div class="field"><label>Categoria *</label><div class="in">Periféricos <span style="margin-left:auto">▾</span></div></div>
+        <div class="row" style="gap:12px"><div class="field"><label>Quantidade</label><div class="in" style="background:#f1f5f9;color:var(--muted)">4</div><span class="hint">Altere via movimentação</span></div><div class="field"><label>Estoque mínimo *</label><div class="in">10</div></div></div>
+        <div class="field"><label>Preço unitário (R$) *</label><div class="in">79,90</div></div>
+        <div class="field"><label>Data de cadastro</label><div class="in" style="background:#f1f5f9;color:var(--muted)">02/10/2026 09:14</div></div>
+        <div style="background:var(--err-l);color:#991b1b;padding:12px;border-radius:8px;font-size:13px">⚠️ Produto abaixo do estoque mínimo. Faltam <b>6 unidades</b>.</div>
+        <div style="display:flex;gap:10px;margin-top:auto"><button class="btn" style="flex:1;justify-content:center">Cancelar</button><button class="btn p" style="flex:1;justify-content:center">Salvar alterações</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 4. MOVIMENTAÇÕES ======================= -->
+<section class="screen" id="movimentacoes">
+  <aside class="side" data-on="movimentacoes"></aside>
+  <div class="main">
+    <header class="top"><h1>Movimentação de Estoque</h1><div class="search">🔍 Buscar produtos, movimentações...</div><div class="bell">🔔</div><div class="user"><i>RM</i><div><b>Ryan Medeiros</b><small>Administrador</small></div></div></header>
+    <div class="content" style="flex-direction:row">
+      <div class="card" style="width:380px;flex:none;display:flex;flex-direction:column;gap:16px">
+        <h3 style="margin:0">Nova movimentação</h3>
+        <div class="seg"><span class="on">⬇ Entrada</span><span>⬆ Saída</span></div>
+        <div class="field"><label>Produto *</label><div class="in">🔍 Mouse sem fio Logitech M170 <span style="margin-left:auto">▾</span></div><span class="hint">Saldo atual: <b>4 un.</b> · Mínimo: 10 un.</span></div>
+        <div class="field"><label>Quantidade *</label><div class="in">20</div></div>
+        <div class="field"><label>Data</label><div class="in">24/11/2026 14:30 <span style="margin-left:auto">📅</span></div></div>
+        <div class="field"><label>Observação</label><div class="in ph" style="height:80px;align-items:flex-start;padding-top:10px">Ex.: NF 4521 – Fornecedor Kabum</div></div>
+        <div style="background:var(--ok-l);color:#166534;padding:14px;border-radius:8px;font-size:13px;line-height:1.5">Saldo após a entrada: <b>24 un.</b><br>✓ O produto voltará ao nível normal.</div>
+        <button class="btn g" style="justify-content:center;height:46px;margin-top:auto">✓ Registrar entrada</button>
+      </div>
+      <div class="card" style="flex:1;display:flex;flex-direction:column">
+        <h3>Histórico de movimentações</h3>
+        <div class="filters" style="margin-bottom:16px">
+          <div class="chip">📅 01/11/2026 – 24/11/2026</div><div class="chip">Tipo: Todos ▾</div><div class="chip">Produto: Todos ▾</div>
+          <div style="margin-left:auto;display:flex;gap:10px"><span class="badge b-ok" style="padding:8px 12px;white-space:nowrap">⬇ 612</span><span class="badge b-err" style="padding:8px 12px;white-space:nowrap">⬆ 420</span></div>
+        </div>
+        <table>
+          <tr><th>ID</th><th>Data</th><th>Produto</th><th>Tipo</th><th style="text-align:right">Qtd.</th><th>Usuário</th></tr>
+          <tr><td>#1032</td><td>24/11 13:42</td><td>Mouse sem fio Logitech M170</td><td><span class="badge b-err">⬆ Saída</span></td><td class="n">6</td><td>Ana Souza</td></tr>
+          <tr><td>#1031</td><td>24/11 10:15</td><td>Cabo HDMI 2m</td><td><span class="badge b-ok">⬇ Entrada</span></td><td class="n">150</td><td>Ryan Medeiros</td></tr>
+          <tr><td>#1030</td><td>23/11 17:08</td><td>Monitor LG 24" Full HD</td><td><span class="badge b-err">⬆ Saída</span></td><td class="n">2</td><td>Ana Souza</td></tr>
+          <tr><td>#1029</td><td>23/11 15:30</td><td>Notebook Dell Inspiron 15</td><td><span class="badge b-err">⬆ Saída</span></td><td class="n">2</td><td>Carlos Lima</td></tr>
+          <tr><td>#1028</td><td>23/11 09:02</td><td>Notebook Dell Inspiron 15</td><td><span class="badge b-ok">⬇ Entrada</span></td><td class="n">20</td><td>Ryan Medeiros</td></tr>
+          <tr><td>#1027</td><td>22/11 16:45</td><td>Papel A4 Chamex (resma)</td><td><span class="badge b-err">⬆ Saída</span></td><td class="n">8</td><td>Carlos Lima</td></tr>
+          <tr><td>#1026</td><td>22/11 11:20</td><td>Teclado mecânico Redragon</td><td><span class="badge b-ok">⬇ Entrada</span></td><td class="n">12</td><td>Ryan Medeiros</td></tr>
+          <tr><td>#1025</td><td>21/11 14:10</td><td>Headset JBL Quantum 100</td><td><span class="badge b-err">⬆ Saída</span></td><td class="n">5</td><td>Ana Souza</td></tr>
+        </table>
+        <div class="pager" style="margin-top:auto"><span>Mostrando 1–8 de 1.032</span><span><b>‹</b><b class="on">1</b><b>2</b><b>3</b><b>…</b><b>129</b><b>›</b></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 5. RELATÓRIOS ======================= -->
+<section class="screen" id="relatorios">
+  <aside class="side" data-on="relatorios"></aside>
+  <div class="main">
+    <header class="top"><h1>Relatórios</h1><div class="search">🔍 Buscar produtos, movimentações...</div><div class="bell">🔔</div><div class="user"><i>RM</i><div><b>Ryan Medeiros</b><small>Administrador</small></div></div></header>
+    <div class="content">
+      <div class="row">
+        <div class="rep on"><span class="ic">📋</span><div><b>Posição de estoque</b><small>Saldo e valor de todos os produtos</small></div></div>
+        <div class="rep"><span class="ic">🔄</span><div><b>Movimentações por período</b><small>Entradas e saídas detalhadas</small></div></div>
+        <div class="rep"><span class="ic">⚠️</span><div><b>Produtos críticos</b><small>Itens abaixo do estoque mínimo</small></div></div>
+        <div class="rep"><span class="ic">📈</span><div><b>Curva ABC</b><small>Produtos por valor movimentado</small></div></div>
+      </div>
+      <div class="card" style="flex:1;display:flex;flex-direction:column">
+        <div class="filters" style="margin-bottom:18px">
+          <h3 style="margin:0;margin-right:12px">Posição de estoque</h3>
+          <div class="chip">📅 Novembro/2026 ▾</div><div class="chip">Categoria: Todas ▾</div>
+          <button class="btn" style="margin-left:auto">📄 Exportar PDF</button><button class="btn">📊 Exportar CSV</button><button class="btn p">Gerar relatório</button>
+        </div>
+        <div class="row" style="margin-bottom:18px">
+          <div style="flex:1;background:#f8fafc;border-radius:10px;padding:16px"><p style="color:var(--muted);font-size:13px">Itens em estoque</p><b style="font-size:22px">8.914 un.</b></div>
+          <div style="flex:1;background:#f8fafc;border-radius:10px;padding:16px"><p style="color:var(--muted);font-size:13px">Valor total</p><b style="font-size:22px">R$ 186.420,50</b></div>
+          <div style="flex:1;background:#f8fafc;border-radius:10px;padding:16px"><p style="color:var(--muted);font-size:13px">Giro médio</p><b style="font-size:22px">2,4x / mês</b></div>
+          <div style="flex:1;background:var(--err-l);border-radius:10px;padding:16px"><p style="color:#991b1b;font-size:13px">Produtos críticos</p><b style="font-size:22px;color:#991b1b">7 (2,8%)</b></div>
+        </div>
+        <table>
+          <tr><th>Categoria</th><th style="text-align:right">Produtos</th><th style="text-align:right">Unidades</th><th style="text-align:right">Valor (R$)</th><th>Participação</th><th style="text-align:right">Críticos</th></tr>
+          <tr><td><b>Eletrônicos</b></td><td class="n">64</td><td class="n">1.208</td><td class="n">70.839,79</td><td><div class="prog" style="width:220px"><i style="width:38%;background:var(--brand)"></i></div></td><td class="n"><span class="badge b-err">3</span></td></tr>
+          <tr><td><b>Periféricos</b></td><td class="n">82</td><td class="n">2.430</td><td class="n">44.740,92</td><td><div class="prog" style="width:220px"><i style="width:24%;background:var(--brand)"></i></div></td><td class="n"><span class="badge b-err">2</span></td></tr>
+          <tr><td><b>Acessórios</b></td><td class="n">57</td><td class="n">3.611</td><td class="n">37.284,10</td><td><div class="prog" style="width:220px"><i style="width:20%;background:var(--brand)"></i></div></td><td class="n"><span class="badge b-ok">0</span></td></tr>
+          <tr><td><b>Escritório</b></td><td class="n">45</td><td class="n">1.665</td><td class="n">33.555,69</td><td><div class="prog" style="width:220px"><i style="width:18%;background:var(--brand)"></i></div></td><td class="n"><span class="badge b-err">2</span></td></tr>
+          <tr style="background:#f8fafc;font-weight:700"><td>Total</td><td class="n">248</td><td class="n">8.914</td><td class="n">186.420,50</td><td>100%</td><td class="n">7</td></tr>
+        </table>
+        <div style="margin-top:auto;background:#fff7ed;border:1px dashed #ea580c;border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:center;color:#7c2d12">🤖 <span><b>Resumo com IA (em breve):</b> "Eletrônicos concentram 38% do valor. Sugiro repor 6 mouses M170 e 1 monitor LG até sexta."</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 6. CONFIGURAÇÕES ======================= -->
+<section class="screen" id="configuracoes">
+  <aside class="side" data-on="configuracoes"></aside>
+  <div class="main">
+    <header class="top"><h1>Configurações</h1><div class="search">🔍 Buscar produtos, movimentações...</div><div class="bell">🔔</div><div class="user"><i>RM</i><div><b>Ryan Medeiros</b><small>Administrador</small></div></div></header>
+    <div class="content">
+      <div class="tabs"><span class="on">Geral</span><span>Usuários</span><span>Notificações</span><span>Integrações</span><span>Segurança</span></div>
+      <div class="row" style="flex:1;min-height:0">
+        <div style="flex:1;display:flex;flex-direction:column;gap:20px">
+          <div class="card">
+            <h3>Dados da empresa</h3>
+            <div class="row" style="gap:14px;margin-bottom:14px"><div class="field"><label>Razão social</label><div class="in">Tech Distribuidora Ltda.</div></div><div class="field"><label>CNPJ</label><div class="in">12.345.678/0001-90</div></div></div>
+            <div class="row" style="gap:14px"><div class="field"><label>E-mail de contato</label><div class="in">contato@techdistribuidora.com.br</div></div><div class="field"><label>Moeda</label><div class="in">Real (R$) <span style="margin-left:auto">▾</span></div></div></div>
+          </div>
+          <div class="card" style="flex:1">
+            <h3>Usuários <button class="btn p" style="height:34px">＋ Convidar</button></h3>
+            <table>
+              <tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr>
+              <tr><td><b>Ryan Medeiros</b></td><td>ryan@empresa.com.br</td><td><span class="badge b-blue">Administrador</span></td><td><span class="badge b-ok">Ativo</span></td></tr>
+              <tr><td><b>Ana Souza</b></td><td>ana@empresa.com.br</td><td><span class="badge b-blue">Gestor</span></td><td><span class="badge b-ok">Ativo</span></td></tr>
+              <tr><td><b>Carlos Lima</b></td><td>carlos@empresa.com.br</td><td><span class="badge b-blue">Operador</span></td><td><span class="badge b-ok">Ativo</span></td></tr>
+            </table>
+          </div>
+        </div>
+        <div style="width:440px;display:flex;flex-direction:column;gap:20px">
+          <div class="card">
+            <h3>Alertas e notificações</h3>
+            <div class="set-row"><div><b>Alerta de estoque mínimo</b><small>Avisar quando quantidade ≤ mínimo</small></div><span class="sw"></span></div>
+            <div class="set-row"><div><b>Notificar por e-mail</b><small>gestor@empresa.com.br</small></div><span class="sw"></span></div>
+            <div class="set-row"><div><b>Notificar por WhatsApp</b><small>Via automação N8N</small></div><span class="sw off"></span></div>
+            <div class="set-row"><div><b>Relatório diário automático</b><small>Todos os dias às 08:00</small></div><span class="sw"></span></div>
+          </div>
+          <div class="card" style="flex:1">
+            <h3>Integrações <span class="badge" style="background:#ffedd5;color:#9a3412">Dia 9</span></h3>
+            <div class="set-row"><div><b>🔁 N8N</b><small>Webhook: https://n8n.empresa.com/webhook/…</small></div><span class="badge b-warn">Pendente</span></div>
+            <div class="set-row"><div><b>🧠 Agente de IA (Claude)</b><small>Consultas em linguagem natural</small></div><span class="badge b-warn">Pendente</span></div>
+          </div>
+          <button class="btn p" style="justify-content:center;height:46px">Salvar configurações</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+const NAV=[["dashboard","📊","Dashboard"],["produtos","📦","Produtos"],["movimentacoes","🔄","Movimentações"],["relatorios","📄","Relatórios"],["configuracoes","⚙️","Configurações"]];
+document.querySelectorAll(".side").forEach(s=>{
+  s.innerHTML='<div class="logo"><i>📦</i>SmartStock</div><nav class="nav">'+
+  NAV.map(([id,ic,t])=>`<a href="#${id}" class="${s.dataset.on===id?'on':''}"><span>${ic}</span>${t}</a>`).join("")+
+  '<a href="#login"><span>🚪</span>Sair</a></nav><div class="ia"><b>🤖 Assistente IA</b>Pergunte sobre seu estoque em linguagem natural.<br><em>Em breve · Dia 9</em></div>';
+});
+function show(){const id=(location.hash||"#login").slice(1);document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));}
+addEventListener("hashchange",show);show();
+</script>
+</body>
+</html>

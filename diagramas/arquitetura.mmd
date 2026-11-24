@@ -1,0 +1,42 @@
+flowchart LR
+    subgraph H["🧑 Interação Humana"]
+        U["👤 Usuário<br/>(Admin / Gestor / Operador)"]
+        FE["🖥️ Front-end<br/>HTML · CSS · JavaScript<br/>(Dia 7)"]
+    end
+
+    subgraph B["⚙️ Back-end (Dia 8)"]
+        API["🔌 API REST<br/>Node.js + Express<br/>JWT · Regras de negócio"]
+    end
+
+    DB[("🗄️ Banco de Dados<br/>MySQL<br/>produtos · movimentacoes")]
+
+    subgraph A["🤖 Interação Autônoma — Integração Futura (Dia 9)"]
+        N8N["🔁 N8N<br/>Workflows · Webhooks<br/>Alertas agendados"]
+        IA["🧠 Agente de IA<br/>Claude API<br/>Linguagem natural"]
+        NOT["📧 Notificações<br/>E-mail · WhatsApp"]
+    end
+
+    U -->|"acessa via navegador"| FE
+    FE -->|"HTTP/JSON (fetch)"| API
+    API -->|"SQL (CRUD)"| DB
+    DB -->|"resultados"| API
+    API -->|"respostas JSON"| FE
+
+    API -.->|"webhook: estoque ≤ mínimo"| N8N
+    N8N -.->|"consulta endpoints"| API
+    N8N -.->|"prompt + dados"| IA
+    IA -.->|"análise / resposta"| N8N
+    N8N -.->|"alerta de reposição"| NOT
+    FE -.->|"chat: pergunta em linguagem natural"| N8N
+
+    classDef human fill:#e8f0fe,stroke:#1a56db,color:#0b1f44
+    classDef back fill:#eef2f7,stroke:#334155,color:#0f172a
+    classDef data fill:#dcfce7,stroke:#15803d,color:#052e16
+    classDef future fill:#fff7ed,stroke:#ea580c,color:#431407,stroke-dasharray:5 4
+    class U,FE human
+    class API back
+    class DB data
+    class N8N,IA,NOT future
+    style H fill:#f8fafc,stroke:#94a3b8
+    style B fill:#f8fafc,stroke:#94a3b8
+    style A fill:#fffbf5,stroke:#ea580c,stroke-dasharray:6 4

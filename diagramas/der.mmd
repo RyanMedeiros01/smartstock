@@ -1,0 +1,18 @@
+erDiagram
+    PRODUTOS ||--o{ MOVIMENTACOES : "possui"
+    PRODUTOS {
+        INT id PK
+        VARCHAR nome
+        VARCHAR categoria
+        INT quantidade
+        INT estoque_minimo
+        DECIMAL preco
+        DATETIME data_cadastro
+    }
+    MOVIMENTACOES {
+        INT id PK
+        INT produto_id FK
+        ENUM tipo "ENTRADA | SAIDA"
+        INT quantidade
+        DATETIME data
+    }
