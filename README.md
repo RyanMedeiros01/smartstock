@@ -1,10 +1,35 @@
 # 📦 SmartStock — Plataforma Inteligente de Gestão de Estoque
 
 > Projeto Integrador do **Programa de Estágio de Férias – Desenvolvimento de Software (DEV)**
-> **Atividade 6 (Dia 6): Planejamento, Design e Arquitetura da Solução**
 > Autor: **Ryan Medeiros**
 
+🌐 **Demo online:** https://ryanmedeiros01.github.io/smartstock/ · 🎬 **Vídeo:** [frontend/docs/demo-navegacao.mp4](frontend/docs/demo-navegacao.mp4) · 🎨 **Figma:** https://www.figma.com/design/iBujYsVVPs2T4p35vuAzIg
+
 Plataforma web para empresas controlarem produtos, entradas e saídas de estoque, níveis mínimos, relatórios e indicadores, com integração futura com **Inteligência Artificial** e **N8N**.
+
+---
+
+## 🖥️ Atividade 7 – Front-end (React)
+
+Interface completa e navegável em **React + Vite**, fiel ao protótipo do Figma: Login, Dashboard com gráficos, Gestão de Produtos (CRUD), Movimentação de Estoque (entrada, saída e histórico), Relatórios e Configurações. É responsiva, tem tema claro/escuro e usa dados mockados prontos para a API.
+
+| Entregável | Onde está |
+|---|---|
+| 💻 Código-fonte | [`frontend/`](frontend) · como rodar em [`frontend/README.md`](frontend/README.md) |
+| 🖼️ Capturas de tela | [`frontend/docs/capturas/`](frontend/docs/capturas) |
+| 🎬 Vídeo da navegação | [`frontend/docs/demo-navegacao.mp4`](frontend/docs/demo-navegacao.mp4) |
+| 🎨 Protótipo no Figma | https://www.figma.com/design/iBujYsVVPs2T4p35vuAzIg |
+| 🌐 Versão publicada | https://ryanmedeiros01.github.io/smartstock/ |
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+| Dashboard | Produtos |
+|---|---|
+| ![](frontend/docs/capturas/02-dashboard.png) | ![](frontend/docs/capturas/03-produtos.png) |
+| **Movimentações** | **Tema escuro** |
+| ![](frontend/docs/capturas/06-movimentacoes.png) | ![](frontend/docs/capturas/11-dashboard-tema-escuro.png) |
 
 ---
 
@@ -19,7 +44,7 @@ Plataforma web para empresas controlarem produtos, entradas e saídas de estoque
 | 🖼️ Capturas de tela do protótipo | [`prototipo/capturas/`](prototipo/capturas) |
 | 🐙 Repositório GitHub com toda a documentação | este repositório |
 
-## 🖼️ Prévia
+## 🖼️ Prévia do protótipo (Atividade 6)
 
 | Login | Dashboard |
 |---|---|
@@ -56,7 +81,7 @@ Integração futura: `API ⇄ N8N ⇄ Agente de IA (Claude API)` para alertas au
 | Dia | Etapa | Status |
 |---|---|---|
 | 6 | Planejamento e Design (fundações) | ✅ Concluído |
-| 7 | Desenvolvimento Front-end (interface) | ⏳ |
+| 7 | Desenvolvimento Front-end (interface) | ✅ Concluído |
 | 8 | Back-end e Banco de Dados (motor) | ⏳ |
 | 9 | Integração com IA, N8N e finalização | ⏳ |
 
@@ -75,11 +100,13 @@ smartstock/
 ├── diagramas/
 │   ├── arquitetura.mmd/.png/.svg
 │   └── der.mmd/.png/.svg
-└── prototipo/
-    ├── index.html              # protótipo navegável em HTML
-    └── capturas/               # prints das 6 telas
+├── prototipo/
+│   ├── index.html              # protótipo navegável em HTML
+│   └── capturas/               # prints das 6 telas
+├── frontend/                   # Atividade 7 – aplicação React
+└── .github/workflows/          # deploy automático no GitHub Pages
 ```
 
 ## 🛠️ Tecnologias planejadas
 
-HTML5 · CSS3 · JavaScript · Node.js · Express · MySQL · JWT · N8N · Claude API · Figma · Git/GitHub
+HTML5 · CSS3 · JavaScript · React · Vite · Recharts · Node.js · Express · MySQL · JWT · N8N · Claude API · Figma · Git/GitHub
